@@ -20,9 +20,6 @@ id removeNull(id rootObject);
 
 @implementation STTwitterAPIWrapper
 
-#if TARGET_OS_IPHONE
-#else
-
 - (id)init {
     self = [super init];
     
@@ -42,8 +39,6 @@ id removeNull(id rootObject);
     twitter.oauth = [[[STTwitterOAuthOSX alloc] init] autorelease];
     return [twitter autorelease];
 }
-
-#endif
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
                                              consumerKey:(NSString *)consumerKey

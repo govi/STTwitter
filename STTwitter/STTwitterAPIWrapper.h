@@ -44,10 +44,7 @@
 
 @interface STTwitterAPIWrapper : NSObject
 
-#if TARGET_OS_IPHONE
-#else
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthOSX;
-#endif
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
                                              consumerKey:(NSString *)consumerKey

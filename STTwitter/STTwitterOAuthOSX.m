@@ -7,11 +7,8 @@
 //
 
 #import "STTwitterOAuthOSX.h"
-#import <Social/Social.h>
 #import <Accounts/Accounts.h>
-
-#if TARGET_OS_IPHONE
-#else
+#import <Twitter/Twitter.h>
 
 @implementation STTwitterOAuthOSX
 
@@ -24,7 +21,7 @@
 }
 
 - (NSString *)username {
-    ACAccountStore *accountStore = [[[ACAccountStore alloc] init] autorelease];
+    ACAccountStore *accountStore = [[ACAccountStore alloc] init];
     ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
     NSArray *accounts = [accountStore accountsWithAccountType:accountType];
     ACAccount *twitterAccount = [accounts lastObject];
@@ -65,17 +62,19 @@
 
     NSData *mediaData = [params valueForKey:@"media[]"];
     
-    NSMutableDictionary *paramsWithoutMedia = [[params mutableCopy] autorelease];
+    NSMutableDictionary *paramsWithoutMedia = [params mutableCopy];
     [paramsWithoutMedia removeObjectForKey:@"media[]"];
     
     [self requestAccessWithCompletionBlock:^(ACAccount *twitterAccount) {
         NSString *urlString = [@"https://api.twitter.com/1.1/" stringByAppendingString:resource];
         NSURL *url = [NSURL URLWithString:urlString];
-        SLRequest *request = [SLRequest requestForServiceType:SLServiceTypeTwitter requestMethod:httpMethod URL:url parameters:paramsWithoutMedia];
+        //SLRequest *request = [SLRequest requestForServiceType:SLServiceTypeTwitter requestMethod:httpMethod URL:url parameters:paramsWithoutMedia];
+        TWRequest *request = [[TWRequest alloc] initWithURL:url parameters:paramsWithoutMedia requestMethod:httpMethod];
         request.account = twitterAccount;
         
         if(mediaData) {
-            [request addMultipartData:mediaData withName:@"media[]" type:@"application/octet-stream" filename:@"media.jpg"];
+            //[request addMultipartData:mediaData withName:@"media[]" type:@"application/octet-stream" filename:@"media.jpg"];
+            [request addMultiPartData:mediaData withName:@"media[]" type:@"application/octet-stream"];
         }
         
         [request performRequestWithHandler:^(NSData *responseData, NSHTTPURLResponse *urlResponse, NSError *error) {
@@ -120,7 +119,7 @@
                 jsonErrors = [NSArray arrayWithObject:@{@"message":jsonErrors, @"code" : @(0)}];
             }
             
-            if([jsonErrors count] > 0 && [[jsonErrors lastObject] isEqualTo:[NSNull null]] == NO) {
+            if([jsonErrors count] > 0 && [[jsonErrors lastObject] isEqual:[NSNull null]] == NO) {
                 
                 NSDictionary *jsonErrorDictionary = [jsonErrors lastObject];
                 NSString *message = jsonErrorDictionary[@"message"];
@@ -162,14 +161,14 @@
 
 - (void)getResource:(NSString *)resource parameters:(NSDictionary *)params successBlock:(STTE_completionBlock_t)completionBlock errorBlock:(STTE_errorBlock_t)errorBlock {
     
-    int HTTPMethod = SLRequestMethodGET;
+    int HTTPMethod = TWRequestMethodGET;
     
     [self fetchAPIResource:resource httpMethod:HTTPMethod parameters:params completionBlock:completionBlock errorBlock:errorBlock];
 }
 
 - (void)postResource:(NSString *)resource parameters:(NSDictionary *)params successBlock:(STTE_completionBlock_t)completionBlock errorBlock:(STTE_errorBlock_t)errorBlock {
     
-    int HTTPMethod = SLRequestMethodPOST;
+    int HTTPMethod = TWRequestMethodPOST;
     
     NSDictionary *d = params ? params : @{};
     
@@ -178,4 +177,3 @@
 
 @end
 
-#endif
