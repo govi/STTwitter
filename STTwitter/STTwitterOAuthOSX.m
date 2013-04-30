@@ -9,6 +9,7 @@
 #import "STTwitterOAuthOSX.h"
 #import <Accounts/Accounts.h>
 #import <Twitter/Twitter.h>
+#import "STTwitterAccountSelector.h"
 
 @implementation STTwitterOAuthOSX
 
@@ -21,40 +22,24 @@
 }
 
 - (NSString *)username {
-    ACAccountStore *accountStore = [[ACAccountStore alloc] init];
-    ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
-    NSArray *accounts = [accountStore accountsWithAccountType:accountType];
-    ACAccount *twitterAccount = [accounts lastObject];
-    return twitterAccount.username;
+    if(_selectedAccount)
+        return _selectedAccount.username;
+    else {//TODO: what the hell??
+        [self requestAccessWithCompletionBlock:nil errorBlock:nil];
+        return _selectedAccount.username;
+    }
 }
 
 - (void)requestAccessWithCompletionBlock:(void(^)(ACAccount *twitterAccount))completionBlock errorBlock:(void(^)(NSError *))errorBlock {
-    
-    ACAccountStore *accountStore = [[ACAccountStore alloc] init];
-    ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
-    
-    [accountStore requestAccessToAccountsWithType:accountType options:nil completion:^(BOOL granted, NSError *error) {
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            if(granted) {
-                
-                NSArray *accounts = [accountStore accountsWithAccountType:accountType];
-                
-                // TODO: let the user choose the account he wants
-                ACAccount *twitterAccount = [accounts lastObject];
-                
-//                id cred = [twitterAccount credential];
-                
-                completionBlock(twitterAccount);
-            } else {
-                NSError *e = error;
-                if(e == nil) {
-                    NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Cannot access OS X Twitter account." };
-                    e = [NSError errorWithDomain:@"STTwitterOAuthOSX" code:0 userInfo:userInfo];
-                }
-                errorBlock(e);
-            }
-        }];
+    [STTwitterAccountSelector getCurrentAccount:^(ACAccount *account) {
+        completionBlock(account);
+    } cancelled:^(NSError *error){
+        NSError *e = error;
+        if(e == nil) {
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Cannot access OS X Twitter account." };
+            e = [NSError errorWithDomain:@"STTwitterOAuthOSX" code:0 userInfo:userInfo];
+        }
+        errorBlock(e);
     }];
 }
 

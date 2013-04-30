@@ -18,6 +18,7 @@ typedef void (^STTE_errorBlock_t)(NSError *error);
 
 }
 
+@property (nonatomic, strong) ACAccount *selectedAccount;
 
 - (BOOL)canVerifyCredentials;
 - (void)verifyCredentialsWithSuccessBlock:(void(^)(NSString *username))successBlock errorBlock:(void(^)(NSError *error))errorBlock;

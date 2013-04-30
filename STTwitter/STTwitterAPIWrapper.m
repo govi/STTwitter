@@ -392,7 +392,7 @@ id removeNull(id rootObject);
 #pragma mark Search
 
 - (void)getSearchTweetsWithQuery:(NSString *)q
-					successBlock:(void(^)(NSArray *statuses))successBlock
+					successBlock:(void(^)(NSDictionary *response))successBlock
 					  errorBlock:(void(^)(NSError *error))errorBlock {
     
     NSDictionary *d = @{@"q" : q};
