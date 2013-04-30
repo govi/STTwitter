@@ -126,6 +126,9 @@
 //	GET		statuses/retweets/:id
 
 //	GET		statuses/show/:id
+- (void)getStatusWithID:(NSString *)statusID
+                   successBlock:(void(^)(NSDictionary *status))successBlock
+                     errorBlock:(void(^)(NSError *error))errorBlock;
 
 //	POST	statuses/destroy/:id
 //	Returns Tweets (1: the destroyed tweet)

@@ -291,6 +291,19 @@ id removeNull(id rootObject);
 
 #pragma mark Tweets
 
+-(void)getStatusWithID:(NSString *)statusID
+          successBlock:(void (^)(NSDictionary *))successBlock
+            errorBlock:(void (^)(NSError *))errorBlock {
+    NSString *resource = [NSString stringWithFormat:@"statuses/show/%@.json", statusID];
+    
+	//Twitter returns an unauthenticated error if parameters is nil.
+    [_oauth getResource:resource parameters:@{ @"id" : statusID } successBlock:^(id response) {
+        successBlock(response);
+    } errorBlock:^(NSError *error) {
+        errorBlock(error);
+    }];
+}
+
 - (void)postDestroyStatusWithID:(NSString *)statusID
                    successBlock:(void(^)(NSDictionary *status))successBlock
                      errorBlock:(void(^)(NSError *error))errorBlock {
