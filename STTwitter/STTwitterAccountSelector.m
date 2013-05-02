@@ -83,11 +83,22 @@
         actions.cancelButtonIndex = [_shownAccounts count];
         [actions showInView: [UIApplication sharedApplication].keyWindow];
     } else {
-        [self selectAccountAtIndex:0];
+        if([_shownAccounts count] > 0)
+            [self selectAccountAtIndex:0];
+        else {
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"There are no twitter accounts configured" };
+            onCancel([NSError errorWithDomain:@"STTwitterAccountSelector" code:0 userInfo:userInfo]);
+            onCancel = nil;
+        }
     }
 #else
     if([_shownAccounts count] > 0)
         [self selectAccountAtIndex:0];
+    else {
+        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"There are no twitter accounts configured" };
+        onCancel([NSError errorWithDomain:@"STTwitterAccountSelector" code:0 userInfo:userInfo]);
+        onCancel = nil;
+    }
 #endif
 }
 
