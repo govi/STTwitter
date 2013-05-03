@@ -8,6 +8,8 @@
 
 #import "STTwitterAccountSelector.h"
 
+#define kLastSelectedTwitterUsername @"lastSelectedUsernane"
+
 @implementation STTwitterAccountSelector
 
 +(void) getCurrentAccount:(void(^)(ACAccount *account))selected cancelled:(void(^)(NSError *error))cancelled {
@@ -74,21 +76,32 @@
 #if TARGET_OS_IPHONE
     UIActionSheet *actions = [[UIActionSheet alloc] initWithTitle:@"Choose Account to Use" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil];
     actions.tag = 2;
+    
+    NSString *string = [[NSUserDefaults standardUserDefaults] objectForKey:kLastSelectedTwitterUsername];
+    ACAccount *selectedAccount = nil;
     for (ACAccount *oneAccount in _shownAccounts)
     {
         [actions addButtonWithTitle:oneAccount.username];
+        if(string && [string isEqualToString:oneAccount.username])
+            selectedAccount = oneAccount;
     }
-    if([_shownAccounts count] > 1) {
-        [actions addButtonWithTitle:@"Cancel"];
-        actions.cancelButtonIndex = [_shownAccounts count];
-        [actions showInView: [UIApplication sharedApplication].keyWindow];
+    
+    if(selectedAccount) {
+        int selected = [_shownAccounts indexOfObject:selectedAccount];
+        [self selectAccountAtIndex:selected];
     } else {
-        if([_shownAccounts count] > 0)
-            [self selectAccountAtIndex:0];
-        else {
-            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"There are no twitter accounts configured" };
-            onCancel([NSError errorWithDomain:@"STTwitterAccountSelector" code:0 userInfo:userInfo]);
-            onCancel = nil;
+        if([_shownAccounts count] > 1) {
+            [actions addButtonWithTitle:@"Cancel"];
+            actions.cancelButtonIndex = [_shownAccounts count];
+            [actions showInView: [UIApplication sharedApplication].keyWindow];
+        } else {
+            if([_shownAccounts count] > 0)
+                [self selectAccountAtIndex:0];
+            else {
+                NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"There are no twitter accounts configured" };
+                onCancel([NSError errorWithDomain:@"STTwitterAccountSelector" code:0 userInfo:userInfo]);
+                onCancel = nil;
+            }
         }
     }
 #else
@@ -105,6 +118,8 @@
 -(void)selectAccountAtIndex:(int) index {
     if(onSelect) {
         self.currentAccount = [_shownAccounts objectAtIndex:index];
+        [[NSUserDefaults standardUserDefaults] setObject:self.currentAccount.username forKey:kLastSelectedTwitterUsername];
+        [[NSUserDefaults standardUserDefaults] synchronize];
         onSelect([_shownAccounts objectAtIndex:index]);
         onSelect = nil;
     }
