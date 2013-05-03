@@ -43,7 +43,7 @@
 }
 
 -(void)handleAccounts {
-    ACAccountStore *accountStore = [[ACAccountStore alloc] init];
+    accountStore = [[ACAccountStore alloc] init];
     ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
     
     if ([accountType accessGranted])
@@ -67,7 +67,7 @@
     }
 }
 
-- (void)_showListOfTwitterAccountsFromStore:(ACAccountStore *)accountStore
+- (void)_showListOfTwitterAccountsFromStore:(ACAccountStore *)aStore
 {
     ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
     self.shownAccounts = [accountStore accountsWithAccountType:accountType];
@@ -104,6 +104,7 @@
 
 -(void)selectAccountAtIndex:(int) index {
     if(onSelect) {
+        self.currentAccount = [_shownAccounts objectAtIndex:index];
         onSelect([_shownAccounts objectAtIndex:index]);
         onSelect = nil;
     }

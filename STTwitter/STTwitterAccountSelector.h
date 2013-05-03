@@ -12,6 +12,7 @@
 @interface STTwitterAccountSelector : NSObject <UIActionSheetDelegate> {
     void(^onSelect)(ACAccount *selectedAccount);
     void(^onCancel)(NSError *error);
+    ACAccountStore *accountStore;
 }
 
 @property (nonatomic, strong) ACAccount *currentAccount;
