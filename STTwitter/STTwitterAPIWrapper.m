@@ -408,7 +408,7 @@ id removeNull(id rootObject);
 					successBlock:(void(^)(NSDictionary *response))successBlock
 					  errorBlock:(void(^)(NSError *error))errorBlock {
     
-    NSDictionary *d = @{@"q" : q};
+    NSDictionary *d = @{@"q" : q, @"count": [NSNumber numberWithInt:25]};
     
     [_oauth getResource:@"search/tweets.json" parameters:d successBlock:^(id response) {
         successBlock(response);

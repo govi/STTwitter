@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <Accounts/Accounts.h>
 
+#define kLastSelectedTwitterUsername @"lastSelectedUsernane"
+
 @interface STTwitterAccountSelector : NSObject <UIActionSheetDelegate> {
     void(^onSelect)(ACAccount *selectedAccount);
     void(^onCancel)(NSError *error);
@@ -21,5 +23,6 @@
 +(void) getCurrentAccount:(void(^)(ACAccount *account))selected cancelled:(void(^)(NSError *error))cancelled;
 +(void)selectAccount:(void(^)(ACAccount *account))selected cancelled:(void(^)(NSError *error))cancelled;
 +(STTwitterAccountSelector *)sharedSelector;
+-(BOOL)hasConfiguredAccounts;
 
 @end

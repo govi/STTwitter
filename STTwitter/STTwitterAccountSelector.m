@@ -8,8 +8,6 @@
 
 #import "STTwitterAccountSelector.h"
 
-#define kLastSelectedTwitterUsername @"lastSelectedUsernane"
-
 @implementation STTwitterAccountSelector
 
 +(void) getCurrentAccount:(void(^)(ACAccount *account))selected cancelled:(void(^)(NSError *error))cancelled {
@@ -36,12 +34,19 @@
     return s;
 }
 
+-(BOOL)hasConfiguredAccounts {
+    accountStore = [[ACAccountStore alloc] init];
+    ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    NSArray *arr = [accountStore accountsWithAccountType:accountType];
+    return [arr count] > 0;
+}
+
 -(void) onSelectPerform:(void(^)(ACAccount *account))selected {
-    onSelect = selected;
+    onSelect = [selected copy];
 }
 
 -(void) onCancelPerform:(void(^)(NSError *error))cancelled {
-    onCancel = cancelled;
+    onCancel = [cancelled copy];
 }
 
 -(void)handleAccounts {
