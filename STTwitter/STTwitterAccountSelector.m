@@ -34,11 +34,29 @@
     return s;
 }
 
--(BOOL)hasConfiguredAccounts {
+-(STTwitterAccountConfigStatus)hasConfiguredAccounts {
     accountStore = [[ACAccountStore alloc] init];
     ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
-    NSArray *arr = [accountStore accountsWithAccountType:accountType];
-    return [arr count] > 0;
+    if ([accountType accessGranted])
+    {
+        NSArray *arr = [accountStore accountsWithAccountType:accountType];
+        return [arr count] > 0 ? STTwitterAccountConfigStatusSelected:STTwitterAccountConfigStatusNoAccounts;
+    }
+    return lastStatus;
+}
+
+-(void)requestAccess {
+    accountStore = [[ACAccountStore alloc] init];
+    ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    if (![accountType accessGranted])
+    {
+        [accountStore requestAccessToAccountsWithType:accountType withCompletionHandler:^(BOOL granted, NSError *error) {
+            if(error.code == 6) {//there are no accounts to approve
+                lastStatus = STTwitterAccountConfigStatusNoAccounts;
+                [[NSNotificationCenter defaultCenter] postNotificationName:kSTTwitterRegCompleteNotification object:nil];
+            }
+        }];
+    }
 }
 
 -(void) onSelectPerform:(void(^)(ACAccount *account))selected {

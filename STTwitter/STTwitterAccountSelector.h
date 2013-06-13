@@ -10,11 +10,19 @@
 #import <Accounts/Accounts.h>
 
 #define kLastSelectedTwitterUsername @"lastSelectedUsernane"
+#define kSTTwitterRegCompleteNotification @"reg complete"
+
+typedef enum {
+    STTwitterAccountConfigStatusUnknown,
+    STTwitterAccountConfigStatusNoAccounts,
+    STTwitterAccountConfigStatusSelected
+} STTwitterAccountConfigStatus;
 
 @interface STTwitterAccountSelector : NSObject <UIActionSheetDelegate> {
     void(^onSelect)(ACAccount *selectedAccount);
     void(^onCancel)(NSError *error);
     ACAccountStore *accountStore;
+    STTwitterAccountConfigStatus lastStatus;
 }
 
 @property (nonatomic, strong) ACAccount *currentAccount;
@@ -23,6 +31,7 @@
 +(void) getCurrentAccount:(void(^)(ACAccount *account))selected cancelled:(void(^)(NSError *error))cancelled;
 +(void)selectAccount:(void(^)(ACAccount *account))selected cancelled:(void(^)(NSError *error))cancelled;
 +(STTwitterAccountSelector *)sharedSelector;
--(BOOL)hasConfiguredAccounts;
+-(STTwitterAccountConfigStatus)hasConfiguredAccounts;
+-(void)requestAccess;
 
 @end

@@ -171,20 +171,20 @@
         
         NSError *jsonError = nil;
         id json = [NSJSONSerialization JSONObjectWithData:r.responseData options:NSJSONReadingMutableLeaves error:&jsonError];
-        NSLog(@"-- jsonError: %@", [jsonError localizedDescription]);
+        //NSLog(@"-- jsonError: %@", [jsonError localizedDescription]);
         
         if(json == nil) {
             errorBlock(jsonError);
             return;
         }
         
-        NSLog(@"** %@", json);
+        //NSLog(@"** %@", json);
         
         successBlock(json);
     };
     
     r.errorBlock = ^(NSError *error) {
-        NSLog(@"-- body: %@", r.responseString);
+        //NSLog(@"-- body: %@", r.responseString);
         errorBlock(error);
     };
     
