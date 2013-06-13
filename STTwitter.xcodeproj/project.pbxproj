@@ -42,6 +42,7 @@
 		03C7AABB15F76C8B0092A5E6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03C7AA9B15F76C8A0092A5E6 /* Cocoa.framework */; };
 		03DD4F1B15F88ECE00B7B69A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03DD4F1A15F88ECE00B7B69A /* CoreFoundation.framework */; };
 		03DD4F1E15F88ED300B7B69A /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03DD4F1D15F88ED300B7B69A /* Security.framework */; };
+		9774F1E0176A274100180D4A /* STTwitter.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 9774F1DF176A274100180D4A /* STTwitter.podspec */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,6 +105,7 @@
 		5A8D197E16DC59480082DD10 /* STTwitter-Tests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "STTwitter-Tests.xcconfig"; path = "xcconfigs/STTwitter-Tests.xcconfig"; sourceTree = "<group>"; };
 		5A8D197F16DC59480082DD10 /* STTwitter-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "STTwitter-Release.xcconfig"; path = "xcconfigs/STTwitter-Release.xcconfig"; sourceTree = "<group>"; };
 		5A8D198016DC59480082DD10 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Base.xcconfig; path = xcconfigs/Base.xcconfig; sourceTree = "<group>"; };
+		9774F1DF176A274100180D4A /* STTwitter.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = STTwitter.podspec; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -217,6 +219,7 @@
 		03C7AA8C15F76C8A0092A5E6 = {
 			isa = PBXGroup;
 			children = (
+				9774F1DF176A274100180D4A /* STTwitter.podspec */,
 				030ECC901616B7E30057C236 /* STTwitter */,
 				030ECCA71616B98B0057C236 /* STTwitterDemo */,
 				030181881602C9DD006B91AB /* UnitTests */,
@@ -345,6 +348,7 @@
 				030ECCB61616B98B0057C236 /* InfoPlist.strings in Resources */,
 				030ECCB71616B98B0057C236 /* MainMenu.xib in Resources */,
 				030ECCBA1616B98B0057C236 /* TwitterClients.plist in Resources */,
+				9774F1E0176A274100180D4A /* STTwitter.podspec in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
