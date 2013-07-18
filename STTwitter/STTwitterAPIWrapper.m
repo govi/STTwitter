@@ -23,7 +23,7 @@ id removeNull(id rootObject);
 - (id)init {
     self = [super init];
     
-    [[NSNotificationCenter defaultCenter] addObserverForName:ACAccountStoreDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
+    notificationObject = [[NSNotificationCenter defaultCenter] addObserverForName:ACAccountStoreDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
         // OS X account must be considered invalid
         
         if([self.oauth isKindOfClass:[STTwitterOAuthOSX class]]) {
@@ -169,6 +169,7 @@ id removeNull(id rootObject);
     [_userName release];
     [_consumerName release];
     [_oauth release];
+    [[NSNotificationCenter defaultCenter] removeObserver:notificationObject];
     [super dealloc];
 }
 

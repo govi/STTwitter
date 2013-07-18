@@ -7,6 +7,7 @@
 //
 
 #import "STTwitterAccountSelector.h"
+#import <Accounts/Accounts.h>
 
 @implementation STTwitterAccountSelector
 

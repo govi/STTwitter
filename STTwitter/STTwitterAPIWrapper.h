@@ -42,7 +42,9 @@
  https://dev.twitter.com/blog/new-withheld-content-fields-api-responses
  */
 
-@interface STTwitterAPIWrapper : NSObject
+@interface STTwitterAPIWrapper : NSObject {
+    id notificationObject;
+}
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthOSX;
 

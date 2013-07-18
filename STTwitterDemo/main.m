@@ -6,9 +6,10 @@
 //  Copyright (c) 2012 Nicolas Seriot. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 int main(int argc, char *argv[])
 {
-    return NSApplicationMain(argc, (const char **)argv);
+    return UIApplicationMain(argc, (char **)argv, nil, nil);
 }
