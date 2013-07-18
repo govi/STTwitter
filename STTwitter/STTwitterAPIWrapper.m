@@ -20,6 +20,15 @@ id removeNull(id rootObject);
 
 @implementation STTwitterAPIWrapper
 
++(STTwitterAPIWrapper *)sharedAPI {
+    static STTwitterAPIWrapper *wrapper = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        wrapper = [[STTwitterAPIWrapper alloc] init];
+    });
+    return wrapper;
+}
+
 - (id)init {
     self = [super init];
     
@@ -35,7 +44,7 @@ id removeNull(id rootObject);
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthOSX {
-    STTwitterAPIWrapper *twitter = [[STTwitterAPIWrapper alloc] init];
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
     twitter.oauth = [[[STTwitterOAuthOSX alloc] init] autorelease];
     return [twitter autorelease];
 }
@@ -46,7 +55,7 @@ id removeNull(id rootObject);
                                                 username:(NSString *)username
                                                 password:(NSString *)password {
     
-    STTwitterAPIWrapper *twitter = [[STTwitterAPIWrapper alloc] init];
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
     
     twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
                                                        consumerKey:consumerKey
@@ -62,7 +71,7 @@ id removeNull(id rootObject);
                                               oauthToken:(NSString *)oauthToken
                                         oauthTokenSecret:(NSString *)oauthTokenSecret {
     
-    STTwitterAPIWrapper *twitter = [[STTwitterAPIWrapper alloc] init];
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
     
     twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
                                                        consumerKey:consumerKey
@@ -86,14 +95,14 @@ id removeNull(id rootObject);
 + (STTwitterAPIWrapper *)twitterAPIApplicationOnlyWithConsumerKey:(NSString *)consumerKey
                                                    consumerSecret:(NSString *)consumerSecret {
     
-    STTwitterAPIWrapper *twitter = [[STTwitterAPIWrapper alloc] init];
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
     
     STTwitterAppOnly *appOnly = [[[STTwitterAppOnly alloc] init] autorelease];
     appOnly.consumerKey = consumerKey;
     appOnly.consumerSecret = consumerSecret;
     
     twitter.oauth = appOnly;
-    return twitter;
+    return [twitter autorelease];
 }
 
 - (void)postTokenRequest:(void(^)(NSURL *url, NSString *oauthToken))successBlock oauthCallback:(NSString *)oauthCallback errorBlock:(void(^)(NSError *error))errorBlock {
