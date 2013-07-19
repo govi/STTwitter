@@ -36,7 +36,7 @@
     } cancelled:^(NSError *error){
         NSError *e = error;
         if(e == nil) {
-            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Cannot access OS X Twitter account." };
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Cannot access iOS Twitter account." };
             e = [NSError errorWithDomain:@"STTwitterOAuthOSX" code:0 userInfo:userInfo];
         }
         errorBlock(e);
