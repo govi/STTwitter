@@ -45,7 +45,7 @@
 @interface STTwitterAPIWrapper : NSObject {
     id notificationObject;
 }
-
++(void)reset;
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthOSX;
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName

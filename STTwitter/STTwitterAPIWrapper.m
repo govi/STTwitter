@@ -18,15 +18,18 @@ id removeNull(id rootObject);
 @property (nonatomic, retain) NSObject <STTwitterOAuthProtocol> *oauth;
 @end
 
+static STTwitterAPIWrapper *wrapper = nil;
+
 @implementation STTwitterAPIWrapper
 
 +(STTwitterAPIWrapper *)sharedAPI {
-    static STTwitterAPIWrapper *wrapper = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+    if(!wrapper)
         wrapper = [[STTwitterAPIWrapper alloc] init];
-    });
     return wrapper;
+}
+
++(void)reset {
+    wrapper = nil;
 }
 
 - (id)init {
