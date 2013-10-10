@@ -29,6 +29,7 @@ static STTwitterAPIWrapper *wrapper = nil;
 }
 
 +(void)reset {
+    [wrapper release];
     wrapper = nil;
 }
 
@@ -275,12 +276,13 @@ static STTwitterAPIWrapper *wrapper = nil;
 								count:(NSUInteger)optionalCount
                          successBlock:(void(^)(NSArray *statuses))successBlock
                            errorBlock:(void(^)(NSError *error))errorBlock {
-	[self getTimeline:@"statuses/user_timeline.json"
-	   withParameters:@{ @"screen_name" : screenName }
-			  sinceID:nil
-				count:optionalCount
-		 successBlock:successBlock
-		   errorBlock:errorBlock];
+    if(screenName)
+        [self getTimeline:@"statuses/user_timeline.json"
+           withParameters:@{ @"screen_name" : screenName }
+                  sinceID:nil
+                    count:optionalCount
+             successBlock:successBlock
+               errorBlock:errorBlock];
 }
 
 - (void)getUserTimelineWithScreenName:(NSString *)screenName
@@ -420,14 +422,15 @@ static STTwitterAPIWrapper *wrapper = nil;
 - (void)getSearchTweetsWithQuery:(NSString *)q
 					successBlock:(void(^)(NSDictionary *response))successBlock
 					  errorBlock:(void(^)(NSError *error))errorBlock {
-    
-    NSDictionary *d = @{@"q" : q, @"count": @"25"};
-    
-    [_oauth getResource:@"search/tweets.json" parameters:d successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+    if(q) {
+        NSDictionary *d = @{@"q" : q, @"count": @"25"};
+        
+        [_oauth getResource:@"search/tweets.json" parameters:d successBlock:^(id response) {
+            successBlock(response);
+        } errorBlock:^(NSError *error) {
+            errorBlock(error);
+        }];
+    }
 }
 
 #pragma mark Streaming
