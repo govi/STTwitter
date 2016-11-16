@@ -23,34 +23,45 @@ static STTwitterAPIWrapper *wrapper = nil;
 @implementation STTwitterAPIWrapper
 
 +(STTwitterAPIWrapper *)sharedAPI {
-    if(!wrapper)
-        wrapper = [[STTwitterAPIWrapper alloc] init];
-    return wrapper;
+  if(!wrapper)
+    wrapper = [[STTwitterAPIWrapper alloc] init];
+  return wrapper;
 }
 
 +(void)reset {
+  
+  if (wrapper)
+  {
+    [[NSNotificationCenter defaultCenter] removeObserver:wrapper->notificationObject];
+    wrapper->notificationObject = nil;
+    
     [wrapper release];
     wrapper = nil;
+  }
+  
 }
 
 - (id)init {
-    self = [super init];
+  self = [super init];
+  
+  __block STTwitterAPIWrapper *weakSelf = self;
+  
+  notificationObject = [[NSNotificationCenter defaultCenter] addObserverForName:ACAccountStoreDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
+    // OS X account must be considered invalid
     
-    notificationObject = [[NSNotificationCenter defaultCenter] addObserverForName:ACAccountStoreDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
-        // OS X account must be considered invalid
-        
-        if([self.oauth isKindOfClass:[STTwitterOAuthOSX class]]) {
-            self.oauth = nil;//[[[STTwitterOAuthOSX alloc] init] autorelease];
-        }
-    }];
-    
-    return self;
+    if([weakSelf.oauth isKindOfClass:[STTwitterOAuthOSX class]]) {
+      weakSelf.oauth = nil;//[[[STTwitterOAuthOSX alloc] init] autorelease];
+    }
+  }];
+  
+  return self;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthOSX {
-    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-    twitter.oauth = [[[STTwitterOAuthOSX alloc] init] autorelease];
-    return [twitter autorelease];
+  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+  twitter.oauth = [[[STTwitterOAuthOSX alloc] init] autorelease];
+  
+  return twitter;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
@@ -58,15 +69,15 @@ static STTwitterAPIWrapper *wrapper = nil;
                                           consumerSecret:(NSString *)consumerSecret
                                                 username:(NSString *)username
                                                 password:(NSString *)password {
-    
-    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-    
-    twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
-                                                       consumerKey:consumerKey
-                                                    consumerSecret:consumerSecret
-                                                          username:username
-                                                          password:password];
-    return [twitter autorelease];
+  
+  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+  
+  twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
+                                                     consumerKey:consumerKey
+                                                  consumerSecret:consumerSecret
+                                                        username:username
+                                                        password:password];
+  return twitter;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
@@ -74,116 +85,116 @@ static STTwitterAPIWrapper *wrapper = nil;
                                           consumerSecret:(NSString *)consumerSecret
                                               oauthToken:(NSString *)oauthToken
                                         oauthTokenSecret:(NSString *)oauthTokenSecret {
-    
-    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-    
-    twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
-                                                       consumerKey:consumerKey
-                                                    consumerSecret:consumerSecret
-                                                        oauthToken:oauthToken
-                                                  oauthTokenSecret:oauthTokenSecret];
-    return [twitter autorelease];
+  
+  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+  
+  twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
+                                                     consumerKey:consumerKey
+                                                  consumerSecret:consumerSecret
+                                                      oauthToken:oauthToken
+                                                oauthTokenSecret:oauthTokenSecret];
+  return twitter;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
                                              consumerKey:(NSString *)consumerKey
                                           consumerSecret:(NSString *)consumerSecret {
-    
-    return [self twitterAPIWithOAuthConsumerName:consumerName
-                                     consumerKey:consumerKey
-                                  consumerSecret:consumerSecret
-                                        username:nil
-                                        password:nil];
+  
+  return [self twitterAPIWithOAuthConsumerName:consumerName
+                                   consumerKey:consumerKey
+                                consumerSecret:consumerSecret
+                                      username:nil
+                                      password:nil];
 }
 
 + (STTwitterAPIWrapper *)twitterAPIApplicationOnlyWithConsumerKey:(NSString *)consumerKey
                                                    consumerSecret:(NSString *)consumerSecret {
-    
-    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-    
-    STTwitterAppOnly *appOnly = [[[STTwitterAppOnly alloc] init] autorelease];
-    appOnly.consumerKey = consumerKey;
-    appOnly.consumerSecret = consumerSecret;
-    
-    twitter.oauth = appOnly;
-    return [twitter autorelease];
+  
+  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+  
+  STTwitterAppOnly *appOnly = [[[STTwitterAppOnly alloc] init] autorelease];
+  appOnly.consumerKey = consumerKey;
+  appOnly.consumerSecret = consumerSecret;
+  
+  twitter.oauth = appOnly;
+  return twitter;
 }
 
 - (void)postTokenRequest:(void(^)(NSURL *url, NSString *oauthToken))successBlock oauthCallback:(NSString *)oauthCallback errorBlock:(void(^)(NSError *error))errorBlock {
-    [_oauth postTokenRequest:successBlock oauthCallback:oauthCallback errorBlock:errorBlock];
+  [_oauth postTokenRequest:successBlock oauthCallback:oauthCallback errorBlock:errorBlock];
 }
 
 - (void)postAccessTokenRequestWithPIN:(NSString *)pin
                          successBlock:(void(^)(NSString *oauthToken, NSString *oauthTokenSecret, NSString *userID, NSString *screenName))successBlock
                            errorBlock:(void(^)(NSError *error))errorBlock {
-    [_oauth postAccessTokenRequestWithPIN:pin
-                             successBlock:successBlock
-                               errorBlock:errorBlock];
+  [_oauth postAccessTokenRequestWithPIN:pin
+                           successBlock:successBlock
+                             errorBlock:errorBlock];
 }
 
 - (void)verifyCredentialsWithSuccessBlock:(void(^)(NSString *username))successBlock errorBlock:(void(^)(NSError *error))errorBlock {
-    
-    if([_oauth canVerifyCredentials]) {
-        [_oauth verifyCredentialsWithSuccessBlock:^(NSString *username) {
-            self.userName = username;
-            successBlock(_userName);
-        } errorBlock:^(NSError *error) {
-            errorBlock(error);
-        }];
-    } else {
-        [self getAccountVerifyCredentialsSkipStatus:YES successBlock:^(NSDictionary *myInfo) {
-            self.userName = [myInfo valueForKey:@"screen_name"];
-            successBlock(_userName);
-        } errorBlock:^(NSError *error) {
-            errorBlock(error);
-        }];
-    }
+  
+  if([_oauth canVerifyCredentials]) {
+    [_oauth verifyCredentialsWithSuccessBlock:^(NSString *username) {
+      self.userName = username;
+      successBlock(_userName);
+    } errorBlock:^(NSError *error) {
+      errorBlock(error);
+    }];
+  } else {
+    [self getAccountVerifyCredentialsSkipStatus:YES successBlock:^(NSDictionary *myInfo) {
+      self.userName = [myInfo valueForKey:@"screen_name"];
+      successBlock(_userName);
+    } errorBlock:^(NSError *error) {
+      errorBlock(error);
+    }];
+  }
 }
 
 - (void)invalidateBearerTokenWithSuccessBlock:(void(^)())successBlock
                                    errorBlock:(void(^)(NSError *error))errorBlock {
-    if([self.oauth respondsToSelector:@selector(invalidateBearerTokenWithSuccessBlock:errorBlock:)]) {
-        [self.oauth invalidateBearerTokenWithSuccessBlock:successBlock errorBlock:errorBlock];
-    } else {
-        NSLog(@"-- self.oauth does not support tokens invalidation");
-    }
+  if([self.oauth respondsToSelector:@selector(invalidateBearerTokenWithSuccessBlock:errorBlock:)]) {
+    [self.oauth invalidateBearerTokenWithSuccessBlock:successBlock errorBlock:errorBlock];
+  } else {
+    NSLog(@"-- self.oauth does not support tokens invalidation");
+  }
 }
 
 - (NSString *)oauthAccessTokenSecret {
-    return [_oauth oauthAccessTokenSecret];
+  return [_oauth oauthAccessTokenSecret];
 }
 
 - (NSString *)oauthAccessToken {
-    return [_oauth oauthAccessToken];
+  return [_oauth oauthAccessToken];
 }
 
 - (NSString *)bearerToken {
-    if([_oauth respondsToSelector:@selector(bearerToken)]) {
-        return [_oauth bearerToken];
-    }
-    
-    return nil;
+  if([_oauth respondsToSelector:@selector(bearerToken)]) {
+    return [_oauth bearerToken];
+  }
+  
+  return nil;
 }
 
 - (NSString *)userName {
-    
+  
 #if TARGET_OS_IPHONE
 #else
-    if([_oauth isKindOfClass:[STTwitterOAuthOSX class]]) {
-        STTwitterOAuthOSX *oAuthOSX = (STTwitterOAuthOSX *)_oauth;
-        return oAuthOSX.username;
-    }
+  if([_oauth isKindOfClass:[STTwitterOAuthOSX class]]) {
+    STTwitterOAuthOSX *oAuthOSX = (STTwitterOAuthOSX *)_oauth;
+    return oAuthOSX.username;
+  }
 #endif
-    
-    return _userName;
+  
+  return _userName;
 }
 
 - (void)dealloc {
-    [_userName release];
-    [_consumerName release];
-    [_oauth release];
-    [[NSNotificationCenter defaultCenter] removeObserver:notificationObject];
-    [super dealloc];
+  [_userName release];
+  [_consumerName release];
+  [_oauth release];
+  [[NSNotificationCenter defaultCenter] removeObserver:notificationObject];
+  [super dealloc];
 }
 
 /**/
@@ -197,67 +208,67 @@ static STTwitterAPIWrapper *wrapper = nil;
 #endif
 
              errorBlock:(void(^)(NSError *error))errorBlock {
-	[self getUserInformationFor:screenName
-				   successBlock:^(NSDictionary *response) {
-					   NSString *imageURL = [response objectForKey:@"profile_image_url"];
-                       
-					   NSURLRequest *imageRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:imageURL]];
-					   
-					   NSData *imageData = [NSURLConnection sendSynchronousRequest:imageRequest returningResponse:nil error:nil];
-                       
+  [self getUserInformationFor:screenName
+                 successBlock:^(NSDictionary *response) {
+                   NSString *imageURL = [response objectForKey:@"profile_image_url"];
+                   
+                   NSURLRequest *imageRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:imageURL]];
+                   
+                   NSData *imageData = [NSURLConnection sendSynchronousRequest:imageRequest returningResponse:nil error:nil];
+                   
 #if TARGET_OS_IPHONE
-					   successBlock([[[UIImage alloc] initWithData:imageData] autorelease]);
+                   successBlock([[[UIImage alloc] initWithData:imageData] autorelease]);
 #else
-					   successBlock([[[NSImage alloc] initWithData:imageData] autorelease]);
+                   successBlock([[[NSImage alloc] initWithData:imageData] autorelease]);
 #endif
-                       
-				   } errorBlock:^(NSError *error) {
-					   errorBlock(error);
-				   }];
+                   
+                 } errorBlock:^(NSError *error) {
+                   errorBlock(error);
+                 }];
 }
 
 #pragma mark Timelines
 - (void)getTimeline:(NSString *)timeline
-	 withParameters:(NSDictionary *)params
-			sinceID:(NSString *)optionalSinceID
-			  count:(NSUInteger)optionalCount
-	   successBlock:(void(^)(NSArray *statuses))successBlock
-		 errorBlock:(void(^)(NSError *error))errorBlock {
+     withParameters:(NSDictionary *)params
+            sinceID:(NSString *)optionalSinceID
+              count:(NSUInteger)optionalCount
+       successBlock:(void(^)(NSArray *statuses))successBlock
+         errorBlock:(void(^)(NSError *error))errorBlock {
+  
+  NSMutableDictionary *mparams = [params mutableCopy];
+  if (!mparams)
+    mparams = [NSMutableDictionary new];
+  
+  if (optionalSinceID) mparams[@"since_id"] = optionalSinceID;
+  if (optionalCount != NSNotFound) mparams[@"count"] = [@(optionalCount) stringValue];
+  
+  __block NSMutableArray *statuses = [NSMutableArray new];
+  __block void (^requestHandler)(id response) = nil;
+  __block int count = 0;
+  requestHandler = [[^(id response) {
+    if ([response isKindOfClass:[NSArray class]] && [response count] > 0)
+      [statuses addObjectsFromArray:response];
     
-    NSMutableDictionary *mparams = [params mutableCopy];
-	if (!mparams)
-		mparams = [NSMutableDictionary new];
-	
-    if (optionalSinceID) mparams[@"since_id"] = optionalSinceID;
-	if (optionalCount != NSNotFound) mparams[@"count"] = [@(optionalCount) stringValue];
-	
-	__block NSMutableArray *statuses = [NSMutableArray new];
-	__block void (^requestHandler)(id response) = nil;
-	__block int count = 0;
-	requestHandler = [[^(id response) {
-		if ([response isKindOfClass:[NSArray class]] && [response count] > 0)
-			[statuses addObjectsFromArray:response];
-		
-		//Only send another request if we got close to the requested limit, up to a maximum of 4 api calls
-		if (count++ == 0 || (count <= 4 && [response count] >= (optionalCount - 5))) {
-			//Set the max_id so that we don't get statuses we've already received
-			NSString *lastID = [[statuses lastObject] objectForKey:@"id_str"];
-			if (lastID) {
-				NSUInteger maxID = [[NSDecimalNumber decimalNumberWithString:lastID] unsignedIntegerValue];
-				if (maxID != NSNotFound)
-					mparams[@"max_id"] = [@(--maxID) stringValue];
-			}
-			
-			[_oauth getResource:timeline parameters:mparams
-				   successBlock:requestHandler
-					 errorBlock:errorBlock];
-		} else {
-			successBlock(removeNull(statuses));
-		}
-	} copy] autorelease];
-	
-	//Send the first request
-    requestHandler(nil);
+    //Only send another request if we got close to the requested limit, up to a maximum of 4 api calls
+    if (count++ == 0 || (count <= 4 && [response count] >= (optionalCount - 5))) {
+      //Set the max_id so that we don't get statuses we've already received
+      NSString *lastID = [[statuses lastObject] objectForKey:@"id_str"];
+      if (lastID) {
+        NSUInteger maxID = [[NSDecimalNumber decimalNumberWithString:lastID] unsignedIntegerValue];
+        if (maxID != NSNotFound)
+          mparams[@"max_id"] = [@(--maxID) stringValue];
+      }
+      
+      [_oauth getResource:timeline parameters:mparams
+             successBlock:requestHandler
+               errorBlock:errorBlock];
+    } else {
+      successBlock(removeNull(statuses));
+    }
+  } copy] autorelease];
+  
+  //Send the first request
+  requestHandler(nil);
 }
 
 - (void)getMentionsTimelineSinceID:(NSString *)optionalSinceID
@@ -420,17 +431,20 @@ static STTwitterAPIWrapper *wrapper = nil;
 #pragma mark Search
 
 - (void)getSearchTweetsWithQuery:(NSString *)q
-					successBlock:(void(^)(NSDictionary *response))successBlock
-					  errorBlock:(void(^)(NSError *error))errorBlock {
-    if(q) {
-        NSDictionary *d = @{@"q" : q, @"count": @"25"};
-        
-        [_oauth getResource:@"search/tweets.json" parameters:d successBlock:^(id response) {
-            successBlock(response);
-        } errorBlock:^(NSError *error) {
-            errorBlock(error);
-        }];
-    }
+                    afterTweetId: (NSString *)afterId
+                           count: (NSString *)count
+                    successBlock:(void(^)(NSDictionary *response))successBlock
+                      errorBlock:(void(^)(NSError *error))errorBlock {
+  if(q) {
+    NSMutableDictionary *d = [@{@"q" : q, @"count": count} mutableCopy];
+    if(afterId != nil && afterId.length > 0)
+      d[@"max_id"] = afterId;
+    [_oauth getResource:@"search/tweets.json" parameters:d successBlock:^(id response) {
+      successBlock(response);
+    } errorBlock:^(NSError *error) {
+      errorBlock(error);
+    }];
+  }
 }
 
 #pragma mark Streaming
@@ -467,130 +481,130 @@ static STTwitterAPIWrapper *wrapper = nil;
 					   to:(NSString *)screenName
              successBlock:(void(^)(NSDictionary *dm))successBlock
                errorBlock:(void(^)(NSError *error))errorBlock {
-	NSMutableDictionary *md = [NSMutableDictionary dictionaryWithObject:status forKey:@"text"];
-    [md setObject:screenName forKey:@"screen_name"];
-    
-    [_oauth postResource:@"direct_messages/new.json" parameters:md successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+  NSMutableDictionary *md = [NSMutableDictionary dictionaryWithObject:status forKey:@"text"];
+  [md setObject:screenName forKey:@"screen_name"];
+  
+  [_oauth postResource:@"direct_messages/new.json" parameters:md successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 #pragma mark Friends & Followers
 - (void)getUsersAtResource:(NSString *)resource
-			 forScreenName:(NSString *)screenName
-			  successBlock:(void(^)(NSArray *friends))successBlock
-				errorBlock:(void(^)(NSError *error))errorBlock {
-	NSMutableDictionary *d = [NSMutableDictionary dictionaryWithObject:screenName forKey:@"screen_name"];
-	
-	__block NSMutableArray *ids = [NSMutableArray new];
-	__block void (^requestHandler)(id response) = nil;
-	__block NSString *cursor = @"-1";
-	requestHandler = [[^(id response) {
-		if (response) {
-			[ids addObjectsFromArray:[response objectForKey:@"users"]];
-			cursor = [[response objectForKey:@"next_cursor_str"] copy];
-			d[@"cursor"] = cursor;
-		}
-		
-		if ([cursor isEqualToString:@"0"]) {
-			successBlock(ids);
-		} else {
-			[_oauth getResource:resource parameters:d successBlock:requestHandler
-					 errorBlock:errorBlock];
-		}
-	} copy] autorelease];
-	
-	//Send the first request
-	requestHandler(nil);
+             forScreenName:(NSString *)screenName
+              successBlock:(void(^)(NSArray *friends))successBlock
+                errorBlock:(void(^)(NSError *error))errorBlock {
+  NSMutableDictionary *d = [NSMutableDictionary dictionaryWithObject:screenName forKey:@"screen_name"];
+  
+  __block NSMutableArray *ids = [NSMutableArray new];
+  __block void (^requestHandler)(id response) = nil;
+  __block NSString *cursor = @"-1";
+  requestHandler = [[^(id response) {
+    if (response) {
+      [ids addObjectsFromArray:[response objectForKey:@"users"]];
+      cursor = [[response objectForKey:@"next_cursor_str"] copy];
+      d[@"cursor"] = cursor;
+    }
+    
+    if ([cursor isEqualToString:@"0"]) {
+      successBlock(ids);
+    } else {
+      [_oauth getResource:resource parameters:d successBlock:requestHandler
+               errorBlock:errorBlock];
+    }
+  } copy] autorelease];
+  
+  //Send the first request
+  requestHandler(nil);
 }
 
 - (void)getFriendsIDsForScreenName:(NSString *)screenName
-				      successBlock:(void(^)(NSArray *friends))successBlock
+                      successBlock:(void(^)(NSArray *friends))successBlock
                         errorBlock:(void(^)(NSError *error))errorBlock {
-	[self getUsersAtResource:@"friends/ids.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
+  [self getUsersAtResource:@"friends/ids.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
 }
 
 - (void)getFollowersIDsForScreenName:(NSString *)screenName
-					    successBlock:(void(^)(NSArray *followers))successBlock
+                        successBlock:(void(^)(NSArray *followers))successBlock
                           errorBlock:(void(^)(NSError *error))errorBlock {
-	[self getUsersAtResource:@"followers/ids.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
+  [self getUsersAtResource:@"followers/ids.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
 }
 
 - (void)postFollow:(NSString *)screenName
-	  successBlock:(void(^)(NSDictionary *user))successBlock
-		errorBlock:(void(^)(NSError *error))errorBlock {
-	NSDictionary *d = @{@"screen_name" : screenName};
-    
-    [_oauth postResource:@"friendships/create.json" parameters:d successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+      successBlock:(void(^)(NSDictionary *user))successBlock
+        errorBlock:(void(^)(NSError *error))errorBlock {
+  NSDictionary *d = @{@"screen_name" : screenName};
+  
+  [_oauth postResource:@"friendships/create.json" parameters:d successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)postUnfollow:(NSString *)screenName
-		successBlock:(void(^)(NSDictionary *user))successBlock
-		  errorBlock:(void(^)(NSError *error))errorBlock {
-	NSDictionary *d = @{@"screen_name" : screenName};
-    
-    [_oauth postResource:@"friendships/destroy.json" parameters:d successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+        successBlock:(void(^)(NSDictionary *user))successBlock
+          errorBlock:(void(^)(NSError *error))errorBlock {
+  NSDictionary *d = @{@"screen_name" : screenName};
+  
+  [_oauth postResource:@"friendships/destroy.json" parameters:d successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)postUpdateNotifications:(BOOL)notify
-				  forScreenName:(NSString *)screenName
-				   successBlock:(void(^)(NSDictionary *relationship))successBlock
-					 errorBlock:(void(^)(NSError *error))errorBlock {
-	NSMutableDictionary *d = [NSMutableDictionary dictionaryWithObject:screenName forKey:@"screen_name"];
-	d[@"device"] = notify ? @"true" : @"false";
-    
-    [_oauth postResource:@"friendships/update.json" parameters:d successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+                  forScreenName:(NSString *)screenName
+                   successBlock:(void(^)(NSDictionary *relationship))successBlock
+                     errorBlock:(void(^)(NSError *error))errorBlock {
+  NSMutableDictionary *d = [NSMutableDictionary dictionaryWithObject:screenName forKey:@"screen_name"];
+  d[@"device"] = notify ? @"true" : @"false";
+  
+  [_oauth postResource:@"friendships/update.json" parameters:d successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)getFriendsForScreenName:(NSString *)screenName
-				   successBlock:(void(^)(NSArray *friends))successBlock
+                   successBlock:(void(^)(NSArray *friends))successBlock
                      errorBlock:(void(^)(NSError *error))errorBlock {
-	[self getUsersAtResource:@"friends/list.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
+  [self getUsersAtResource:@"friends/list.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
 }
 
 - (void)getFollowersForScreenName:(NSString *)screenName
-					 successBlock:(void(^)(NSArray *followers))successBlock
+                     successBlock:(void(^)(NSArray *followers))successBlock
                        errorBlock:(void(^)(NSError *error))errorBlock {
-	[self getUsersAtResource:@"followers/list.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
+  [self getUsersAtResource:@"followers/list.json" forScreenName:screenName successBlock:successBlock errorBlock:errorBlock];
 }
 
 #pragma mark Users
 
 - (void)getAccountVerifyCredentialsSkipStatus:(BOOL)skipStatus
-								 successBlock:(void(^)(NSDictionary *myInfo))successBlock
-								   errorBlock:(void(^)(NSError *error))errorBlock {
-    
-    NSDictionary *d = @{@"skip_status" : (skipStatus ? @"true" : @"false")};
-    
-    [_oauth getResource:@"account/verify_credentials.json" parameters:d successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+                                 successBlock:(void(^)(NSDictionary *myInfo))successBlock
+                                   errorBlock:(void(^)(NSError *error))errorBlock {
+  
+  NSDictionary *d = @{@"skip_status" : (skipStatus ? @"true" : @"false")};
+  
+  [_oauth getResource:@"account/verify_credentials.json" parameters:d successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)postUpdateProfile:(NSDictionary *)profileData
-			 successBlock:(void(^)(NSDictionary *myInfo))successBlock
-			   errorBlock:(void(^)(NSError *error))errorBlock {
-	[_oauth postResource:@"account/update_profile.json" parameters:profileData successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+             successBlock:(void(^)(NSDictionary *myInfo))successBlock
+               errorBlock:(void(^)(NSError *error))errorBlock {
+  [_oauth postResource:@"account/update_profile.json" parameters:profileData successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 #if TARGET_OS_IPHONE
@@ -598,28 +612,28 @@ static STTwitterAPIWrapper *wrapper = nil;
 #else
 - (void)postUpdateProfileImage:(NSImage *)newImage
 #endif
-				  successBlock:(void(^)(NSDictionary *myInfo))successBlock
-					errorBlock:(void(^)(NSError *error))errorBlock {
-	NSMutableDictionary *md = [NSMutableDictionary dictionaryWithObject:newImage forKey:@"image"];
-	[md setObject:@"image" forKey:@"postDataKey"];
-    
-    [_oauth postResource:@"account/update_profile_image.json" parameters:md successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+                  successBlock:(void(^)(NSDictionary *myInfo))successBlock
+                    errorBlock:(void(^)(NSError *error))errorBlock {
+  NSMutableDictionary *md = [NSMutableDictionary dictionaryWithObject:newImage forKey:@"image"];
+  [md setObject:@"image" forKey:@"postDataKey"];
+  
+  [_oauth postResource:@"account/update_profile_image.json" parameters:md successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)getUserInformationFor:(NSString *)screenName
-				 successBlock:(void(^)(NSDictionary *user))successBlock
-				   errorBlock:(void(^)(NSError *error))errorBlock {
-	NSDictionary *d = @{@"screen_name" : screenName};
-    
-    [_oauth getResource:@"users/show.json" parameters:d successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+                 successBlock:(void(^)(NSDictionary *user))successBlock
+                   errorBlock:(void(^)(NSError *error))errorBlock {
+  NSDictionary *d = @{@"screen_name" : screenName};
+  
+  [_oauth getResource:@"users/show.json" parameters:d successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 #pragma mark Suggested Users
@@ -628,30 +642,30 @@ static STTwitterAPIWrapper *wrapper = nil;
 
 - (void)getFavoritesListWithSuccessBlock:(void(^)(NSArray *statuses))successBlock
                               errorBlock:(void(^)(NSError *error))errorBlock {
-    
-    [_oauth getResource:@"favorites/list.json" parameters:nil successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+  
+  [_oauth getResource:@"favorites/list.json" parameters:nil successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)postFavoriteState:(BOOL)favoriteState
               forStatusID:(NSString *)statusID
              successBlock:(void(^)(NSDictionary *status))successBlock
                errorBlock:(void(^)(NSError *error))errorBlock {
-    
-    NSString *action = favoriteState ? @"create" : @"destroy";
-    
-    NSString *resource = [NSString stringWithFormat:@"favorites/%@.json", action];
-    
-    NSDictionary *d = @{@"id" : statusID};
-    
-    [_oauth postResource:resource parameters:d successBlock:^(id response) {
-        successBlock(response);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+  
+  NSString *action = favoriteState ? @"create" : @"destroy";
+  
+  NSString *resource = [NSString stringWithFormat:@"favorites/%@.json", action];
+  
+  NSDictionary *d = @{@"id" : statusID};
+  
+  [_oauth postResource:resource parameters:d successBlock:^(id response) {
+    successBlock(response);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 #pragma mark Lists
@@ -664,39 +678,39 @@ static STTwitterAPIWrapper *wrapper = nil;
                                longitude:(NSString *)longitude
                             successBlock:(void(^)(NSArray *places))successBlock
                               errorBlock:(void(^)(NSError *error))errorBlock {
+  
+  NSParameterAssert(latitude);
+  NSParameterAssert(longitude);
+  
+  NSDictionary *d = @{ @"lat":latitude, @"lon":longitude };
+  
+  [_oauth getResource:@"geo/reverse_geocode.json" parameters:d successBlock:^(id response) {
     
-    NSParameterAssert(latitude);
-    NSParameterAssert(longitude);
+    NSArray *places = [response valueForKeyPath:@"result.places"];
     
-    NSDictionary *d = @{ @"lat":latitude, @"lon":longitude };
-    
-    [_oauth getResource:@"geo/reverse_geocode.json" parameters:d successBlock:^(id response) {
-        
-        NSArray *places = [response valueForKeyPath:@"result.places"];
-        
-        successBlock(places);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+    successBlock(places);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)getGeoSearchWithLatitude:(NSString *)latitude
                        longitude:(NSString *)longitude
                     successBlock:(void(^)(NSArray *places))successBlock
                       errorBlock:(void(^)(NSError *error))errorBlock {
-    NSParameterAssert(latitude);
-    NSParameterAssert(longitude);
+  NSParameterAssert(latitude);
+  NSParameterAssert(longitude);
+  
+  NSDictionary *d = @{ @"lat":latitude, @"lon":longitude };
+  
+  [_oauth getResource:@"geo/search.json" parameters:d successBlock:^(id response) {
     
-    NSDictionary *d = @{ @"lat":latitude, @"lon":longitude };
+    NSArray *places = [response valueForKeyPath:@"result.places"];
     
-    [_oauth getResource:@"geo/search.json" parameters:d successBlock:^(id response) {
-        
-        NSArray *places = [response valueForKeyPath:@"result.places"];
-        
-        successBlock(places);
-    } errorBlock:^(NSError *error) {
-        errorBlock(error);
-    }];
+    successBlock(places);
+  } errorBlock:^(NSError *error) {
+    errorBlock(error);
+  }];
 }
 
 - (void)getGeoSearchWithIPAddress:(NSString *)ipAddress
