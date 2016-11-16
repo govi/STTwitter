@@ -29,9 +29,7 @@ static STTwitterAPIWrapper *wrapper = nil;
 }
 
 +(void)reset {
-  
-  if (wrapper)
-  {
+    
     [[NSNotificationCenter defaultCenter] removeObserver:wrapper->notificationObject];
     wrapper->notificationObject = nil;
     
@@ -49,19 +47,24 @@ static STTwitterAPIWrapper *wrapper = nil;
   notificationObject = [[NSNotificationCenter defaultCenter] addObserverForName:ACAccountStoreDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
     // OS X account must be considered invalid
     
-    if([weakSelf.oauth isKindOfClass:[STTwitterOAuthOSX class]]) {
-      weakSelf.oauth = nil;//[[[STTwitterOAuthOSX alloc] init] autorelease];
-    }
-  }];
-  
-  return self;
+    __block STTwitterAPIWrapper *weakSelf = self;
+    
+    notificationObject = [[NSNotificationCenter defaultCenter] addObserverForName:ACAccountStoreDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
+        // OS X account must be considered invalid
+        
+        if([weakSelf.oauth isKindOfClass:[STTwitterOAuthOSX class]]) {
+            weakSelf.oauth = nil;//[[[STTwitterOAuthOSX alloc] init] autorelease];
+        }
+    }];
+    
+    return self;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthOSX {
-  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-  twitter.oauth = [[[STTwitterOAuthOSX alloc] init] autorelease];
-  
-  return twitter;
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+    twitter.oauth = [[[STTwitterOAuthOSX alloc] init] autorelease];
+    
+    return twitter;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
@@ -69,15 +72,15 @@ static STTwitterAPIWrapper *wrapper = nil;
                                           consumerSecret:(NSString *)consumerSecret
                                                 username:(NSString *)username
                                                 password:(NSString *)password {
-  
-  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-  
-  twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
-                                                     consumerKey:consumerKey
-                                                  consumerSecret:consumerSecret
-                                                        username:username
-                                                        password:password];
-  return twitter;
+    
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+    
+    twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
+                                                       consumerKey:consumerKey
+                                                    consumerSecret:consumerSecret
+                                                          username:username
+                                                          password:password];
+    return twitter;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
@@ -85,15 +88,15 @@ static STTwitterAPIWrapper *wrapper = nil;
                                           consumerSecret:(NSString *)consumerSecret
                                               oauthToken:(NSString *)oauthToken
                                         oauthTokenSecret:(NSString *)oauthTokenSecret {
-  
-  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-  
-  twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
-                                                     consumerKey:consumerKey
-                                                  consumerSecret:consumerSecret
-                                                      oauthToken:oauthToken
-                                                oauthTokenSecret:oauthTokenSecret];
-  return twitter;
+    
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+    
+    twitter.oauth = [STTwitterOAuth twitterServiceWithConsumerName:consumerName
+                                                       consumerKey:consumerKey
+                                                    consumerSecret:consumerSecret
+                                                        oauthToken:oauthToken
+                                                  oauthTokenSecret:oauthTokenSecret];
+    return twitter;
 }
 
 + (STTwitterAPIWrapper *)twitterAPIWithOAuthConsumerName:(NSString *)consumerName
@@ -109,15 +112,15 @@ static STTwitterAPIWrapper *wrapper = nil;
 
 + (STTwitterAPIWrapper *)twitterAPIApplicationOnlyWithConsumerKey:(NSString *)consumerKey
                                                    consumerSecret:(NSString *)consumerSecret {
-  
-  STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
-  
-  STTwitterAppOnly *appOnly = [[[STTwitterAppOnly alloc] init] autorelease];
-  appOnly.consumerKey = consumerKey;
-  appOnly.consumerSecret = consumerSecret;
-  
-  twitter.oauth = appOnly;
-  return twitter;
+    
+    STTwitterAPIWrapper *twitter = [STTwitterAPIWrapper sharedAPI];
+    
+    STTwitterAppOnly *appOnly = [[[STTwitterAppOnly alloc] init] autorelease];
+    appOnly.consumerKey = consumerKey;
+    appOnly.consumerSecret = consumerSecret;
+    
+    twitter.oauth = appOnly;
+    return twitter;
 }
 
 - (void)postTokenRequest:(void(^)(NSURL *url, NSString *oauthToken))successBlock oauthCallback:(NSString *)oauthCallback errorBlock:(void(^)(NSError *error))errorBlock {
